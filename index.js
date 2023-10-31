@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const server = express();
+const cors = require('cors');
 const productRouter = require('./router/productsRouter.js');
 const usersRouter = require('./router/usersRouter.js');
 const mongoose = require('mongoose');
@@ -17,6 +18,7 @@ async function main() {
 
 console.log('env', process.env.DB_PASSWORD);
 server
+    .use(cors())
     .use('/products', productRouter.router)
     .use('/users', usersRouter.router)
     .use(morgan('default'))
