@@ -4,7 +4,7 @@ const router=express.Router();
 //Crud
 //1)Create 
 router
-.post('/',productController.getProducts)
+.post('/',productController.createProducts)
 //2)Read
 //Read all product
 .get('/',productController.getAllProducts)

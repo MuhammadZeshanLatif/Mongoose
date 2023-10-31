@@ -1,38 +1,72 @@
-const fs=require('fs');
-const _products=JSON.parse(fs.readFileSync('data.json','utf-8'));;
-const products=_products.products;
-exports.getAllProducts=(req,res)=>{
-    res.json(products);
+const fs = require('fs');
+const model = require('./model/productModel')
+const Product = model.Product;
+exports.createProducts = (req, res) => {
+  const product = new Product({
+    title: req.body.title,
+    description: req.body.description,
+    price: req.body.price,
+    discountPercentage: req.body.discountPercentage,
+    rating: req.body.rating,
+    stock: req.body.stock,
+    brand: req.body.brand,
+    category: req.body.category,
+    thumbnail: req.body.thumbnail,
+    images: req.body.images
+  });
+
+  product.save()
+    .then((prod) => {
+      console.log(prod);
+      res.status(201).json(prod);
+    })
+    .catch((error) => {
+      console.error(error.message); // Log the error message
+      res.status(500).json({ error: 'Internal Server Error' });
+    });
 }
-exports.getProducts=(req,res)=>{
-    console.log(req.body);
-    products.push(req.body);
-    res.status(201).json({type:'POST'});
+
+exports.getAllProducts = async (req, res) => {
+  const products = await Product.find();
+  res.json(products);
 }
-exports.getSingleProduct=(req,res)=>{
-    const id = +req.params.id;
-    console.log("these :"+req.params.id);
-    //const product=products.find(p=>p.id===id)
-    const product=products.find(p=>p.id===id)
-    res.status(200).json(product);
+
+exports.getSingleProduct = async (req, res) => {
+  const id = req.params.id;
+  const product = await Product.findById(id);
+  res.status(200).json(product);
 }
-exports.replaceProduct =(req,res)=>{
-    const id = +req.params.id;
-    const productIndex = products.findIndex(p=>p.id===id);
-    products.splice(productIndex,1,{...req.body,id:id});
-    res.status(201).json()
- }
- exports.updateProduct=(req,res)=>{
-    const id = +req.params.id;
-    const productIndex = products.findIndex(p=>p.id===id);
-    const singleProduct=products[productIndex]
-    products.splice(productIndex,1,{...singleProduct,...req.body});
-    res.status(201).json()
+exports.replaceProduct = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const doc = await Product.findOneAndReplace({ _id: id }, req.body, { new: true })
+    res.status(201).json(doc);
+  } catch (err) {
+    res.status(401).json(err);
+  }
+
 }
-exports.deleteProduct=(req,res)=>{
-    const id = +req.params.id;
-    const productIndex = products.findIndex(p=>p.id===id);
-    const singleProduct=products[productIndex];
-    products.splice(productIndex,1);
-    res.status(201).json('Product delete :'+singleProduct);
+exports.updateProduct = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const doc = await Product.findOneAndUpdate({ _id: id }, req.body, { new: true });
+    res.status(201).json(doc)
+  } catch (err) {
+    res.status(401).json(err)
+  }
+}
+exports.deleteProduct = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const doc = await Product.findOneAndDelete({ _id: id });
+    res.status(201).json(doc)
+  } catch(err){
+    res.status(401).json(err)
+  }
+
+    
+  // const productIndex = products.findIndex(p => p.id === id);
+  // const singleProduct = products[productIndex];
+  // products.splice(productIndex, 1);
+  // res.status(201).json('Product delete :' + singleProduct);
 }
